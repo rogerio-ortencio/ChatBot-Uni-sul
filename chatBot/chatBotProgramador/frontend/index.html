@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoveAI - Chat Inteligente</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #ff7eb3, #ff758c, #7f7fd5);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    .background-glow {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      filter: blur(100px);
+      top: -120px;
+      right: -120px;
+    }
+
+    .chat-container {
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+      height: 90vh;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 28px;
+      display: flex;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    }
+
+    .sidebar {
+      width: 280px;
+      background: rgba(255,255,255,0.08);
+      border-right: 1px solid rgba(255,255,255,0.15);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .sidebar-content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-top: 10px;
+      height: 100%;
+    }
+
+    .welcome-box,
+    .example-box,
+    .tips-box {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 22px;
+      padding: 22px;
+      color: white;
+    }
+
+    .welcome-box h2,
+    .example-box h3,
+    .tips-box h3 {
+      margin-bottom: 14px;
+    }
+
+    .welcome-box p {
+      margin-bottom: 12px;
+      opacity: 0.9;
+    }
+
+    .welcome-box ul {
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .welcome-box li {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .example-box {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .example-message {
+      background: rgba(255,255,255,0.08);
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      transition: 0.3s ease;
+      cursor: pointer;
+    }
+
+    .example-message:hover {
+      background: rgba(255,255,255,0.14);
+      transform: translateY(-2px);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #ff4d88, #ff8fab);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 8px 20px rgba(255, 77, 136, 0.4);
+    }
+
+    .logo h1 {
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .logo p {
+      color: rgba(255,255,255,0.75);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .menu-title {
+      color: rgba(255,255,255,0.75);
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .menu-item {
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.08);
+      color: white;
+      cursor: pointer;
+      transition: 0.3s ease;
+      border: 1px solid transparent;
+    }
+
+    .menu-item:hover,
+    .menu-item.active {
+      background: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.25);
+      transform: translateY(-2px);
+    }
+
+    .menu-item span {
+      display: block;
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 4px;
+    }
+
+    .tips-box {
+      margin-top: auto;
+      background: rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 18px;
+      color: white;
+    }
+
+    .tips-box h3 {
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .tips-box p {
+      font-size: 13px;
+      line-height: 1.6;
+      opacity: 0.85;
+    }
+
+    .main-chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      padding: 24px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .chat-header h2 {
+      color: white;
+      font-size: 24px;
+    }
+
+    .chat-header p {
+      color: rgba(255,255,255,0.7);
+      font-size: 14px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: white;
+      font-size: 14px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #00ff88;
+      box-shadow: 0 0 12px #00ff88;
+    }
+
+    .messages {
+      flex: 1;
+      padding: 30px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .message {
+      max-width: 75%;
+      padding: 18px 20px;
+      border-radius: 22px;
+      line-height: 1.6;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .ai-message {
+      background: rgba(255,255,255,0.15);
+      color: white;
+      border-top-left-radius: 6px;
+      align-self: flex-start;
+    }
+
+    .user-message {
+      background: linear-gradient(135deg, #ff4d88, #ff7aa2);
+      color: white;
+      border-top-right-radius: 6px;
+      align-self: flex-end;
+      box-shadow: 0 10px 25px rgba(255,77,136,0.35);
+    }
+
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .suggestion {
+      padding: 10px 16px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.12);
+      color: white;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.3s ease;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .suggestion:hover {
+      background: rgba(255,255,255,0.22);
+      transform: scale(1.03);
+    }
+
+    /* ALTERAÇÃO: Layout do container de input ajustado com Flexbox */
+    .chat-input {
+      padding: 20px 30px 30px 30px;
+      display: flex;
+      align-items: flex-end; /* Mantém o botão na base se a textarea crescer */
+      gap: 16px;
+      width: 100%;
+    }
+
+    /* ALTERAÇÃO: Textarea reduzida e adaptada para o layout lado a lado */
+    .chat-input textarea {
+      flex: 1;
+      padding: 16px 20px;
+      border-radius: 20px;
+      border: none;
+      outline: none;
+      background: rgba(255,255,255,0.14);
+      color: white;
+      font-size: 15px;
+      line-height: 1.5;
+      resize: none;
+
+      /* Altura reduzida fixada inicialmente */
+      min-height: 54px;
+      height: 54px;
+      max-height: 150px;
+
+      overflow-y: auto;
+      transition: background 0.3s ease;
+    }
+
+    .chat-input textarea:focus {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .chat-input textarea::placeholder {
+        color: rgba(255,255,255,0.65);
+    }
+
+    .chat-input textarea::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .chat-input textarea::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+    }
+
+    /* ALTERAÇÃO: Botão posicionado e com altura combinando com a Textarea */
+    .send-btn {
+      border: none;
+      padding: 0 28px;
+      height: 54px; /* Mesma altura padrão da textarea */
+      border-radius: 18px;
+      background: linear-gradient(135deg, #ff4d88, #ff7aa2);
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s ease;
+      box-shadow: 0 10px 25px rgba(255,77,136,0.35);
+      white-space: nowrap;
+    }
+
+    .send-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .send-btn:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .sidebar {
+        display: none;
+      }
+
+      .chat-container {
+        height: 100vh;
+        border-radius: 0;
+      }
+
+      .message {
+        max-width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="background-glow"></div>
+
+  <div class="chat-container">
+
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">❤</div>
+        <div>
+          <h1>LoveAI</h1>
+          <p>Seu assistente social inteligente</p>
+        </div>
+      </div>
+
+      <div class="sidebar-content">
+        <div class="welcome-box">
+          <h2>✨ Bem-vindo</h2>
+          <p>O LoveAI te ajuda a:</p>
+          <ul>
+            <li>Iniciar conversas</li>
+            <li>Responder mensagens</li>
+            <li>Flertar naturalmente</li>
+            <li>Evitar respostas sem graça</li>
+            <li>Ganhar mais confiança social</li>
+          </ul>
+        </div>
+
+        <div class="example-box">
+          <h3>💬 Exemplos</h3>
+          <div class="example-message">“Ela respondeu só com ‘kkkk’, e agora?”</div>
+          <div class="example-message">“Quero parecer mais confiante.”</div>
+          <div class="example-message">“Me ajuda a puxar assunto no Instagram.”</div>
+        </div>
+
+        <div class="tips-box">
+          <h3>Dica do LoveAI ✨</h3>
+          <p>Pessoas se conectam melhor com naturalidade do que com frases perfeitas.</p>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-chat">
+      <header class="chat-header">
+        <div>
+          <h2>Assistente de Conversa</h2>
+          <p>Receba sugestões inteligentes em tempo real</p>
+        </div>
+        <div class="status">
+          <div class="status-dot"></div>
+          Online
+        </div>
+      </header>
+
+      <section class="messages" id="messages">
+        <div class="message ai-message">
+          Olá! 👋 Eu sou o LoveAI.<br><br>
+          Me envie uma mensagem, print ou contexto da conversa e eu vou te ajudar com sugestões naturais e inteligentes ✨
+        </div>
+      </section>
+
+      <footer class="chat-input">
+        <textarea
+            id="input"
+            placeholder="Descreva a conversa ou digite uma mensagem..."
+            rows="1"
+        ></textarea>
+        <button class="send-btn" onclick="enviar()">Enviar</button>
+      </footer>
+    </main>
+  </div>
+
+<script>
+const messages = document.getElementById('messages');
+const input = document.getElementById('input');
+
+input.addEventListener('keydown', function(event) {
+    if(event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        enviar();
+    }
+});
+
+function addMsg(texto, tipo) {
+    const div = document.createElement('div');
+    if (tipo === 'user') {
+        div.className = 'message user-message';
+    } else {
+        div.className = 'message ai-message';
+    }
+    div.innerHTML = texto;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+async function enviar() {
+    const texto = input.value.trim();
+    if (!texto) return;
+
+    addMsg(texto, 'user');
+    input.value = '';
+    input.style.height = '54px'; // ALTERAÇÃO: Reseta para a nova altura padrão corrigida
+
+    input.disabled = true;
+
+    try {
+        const res = await fetch('http://localhost:5000/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                mensagem: texto
+            })
+        });
+
+        if (!res.ok) {
+            throw new Error('Erro na resposta do servidor');
+        }
+
+        const data = await res.json();
+        addMsg(data.resposta, 'bot');
+
+    } catch (erro) {
+        console.error(erro);
+        addMsg('Erro ao conectar com o servidor.', 'bot');
+    } finally {
+        input.disabled = false;
+        input.focus();
+    }
+}
+</script>
+</body>
+</html>
